@@ -103,4 +103,12 @@ python build_layout.py
 
 ---
 
+## Author
+
+- **Wayne** ([@administere](https://github.com/administere))
+- 本项目由人类构思、AI 协作完成。
+- 欢迎通过 [GitHub Issues](https://github.com/administere/photonic-attention/issues) 联系讨论合作或流片机会。
+
+---
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
