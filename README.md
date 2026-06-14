@@ -4,7 +4,7 @@
 > **状态**: 25/25 验证通过 ✅ | ρ ≥ 0.995 | 物理场全仿真闭环  
 > **日期**: 2026-06-14
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20688251.svg)](https://doi.org/10.5281/zenodo.20688251)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20690521.svg)](https://doi.org/10.5281/zenodo.20690521)
 
 ---
 
