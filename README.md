@@ -24,6 +24,8 @@
 
 光热材料参考: Zhang, You et al., "Quantum coherent beating in polar disubphthalocyanine-fullerene cocrystals for ultrafast photothermal conversion", *Nature Photonics* (2026), DOI: 10.1038/s41566-026-01912-4.
 
+**路线A验证 (DiSubPc·C70 光热层):** 10μm 薄膜, 222K 温升 → 1.6π 相位调制 ✅ | 权重更新 0.033Hz (慢), 推理 10GHz (快, 解耦) | 适合权重静态推理
+
 ---
 
 ## 核心验证结果
