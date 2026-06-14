@@ -1,23 +1,28 @@
-# Photonic Transformer Processor
+# 光子 Transformer 处理器
 
-> **热光筛选 → CMOS 直接探测架构**  
+> **热光筛选 → CMOS 直接探测 | 三叠式垂直堆叠**  
+> **候选光热介质: DiSubPc·C70 极性共晶 (量子相干拍频, Nature Photonics 2026)**  
 > **状态**: 25/25 验证通过 ✅ | ρ ≥ 0.995 | 物理场全仿真闭环  
 > **日期**: 2026-06-14
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20690521.svg)](https://doi.org/10.5281/zenodo.20690521)
 
----
-
-## 架构原理
+## 架构
 
 ```
-Q → [预畸变编码] → [热光移相器] → [MZI sin² 传输] → [CMOS 探测器阵列] → 差分累积 → 数字点积
-K → [EO 调制衰减] ──────────────────────────────────────────────────────┘
-
-双极差分: (PP+NN) − (PN+NP)  → 天然共模对消, 扇出损耗不敏感
+┌─────────────────────────────┐
+│  上层: CMOS 探测器阵列       │  4×D² Ge-on-Si 光电二极管 (差分)
+├─────────────────────────────┤
+│  中层: 光热相位筛选层        │  DiSubPc·C70 共晶薄膜
+│  VCSEL 照射 → 量子相干拍频   │  单重态↔三重态相干振荡
+│  → 242°C/30s → 超快 Δn 调制 │  省掉独立加热器, 光直接驱动
+├─────────────────────────────┤
+│  下层: VCSEL 阵列            │  D 个独立激光器 (Q 编码)
+│  光学交叉杆: 每行扇出到 D 列  │  D×K 调制器交叉点 = D² 个点积
+└─────────────────────────────┘
 ```
 
-自由空间或平面光路。无波导网格、无级联干涉仪、无精密定向耦合器。光源经热光筛选后直接打入 CMOS 探测器阵列。
+光热材料参考: Zhang, You et al., "Quantum coherent beating in polar disubphthalocyanine-fullerene cocrystals for ultrafast photothermal conversion", *Nature Photonics* (2026), DOI: 10.1038/s41566-026-01912-4.
 
 ---
 
