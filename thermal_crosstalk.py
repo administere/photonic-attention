@@ -141,9 +141,16 @@ class ThermalCrosstalkModel:
 
     def _build_coupling_matrix(self):
         """
-        Build the thermal coupling matrix C where:
-          δφ_i = Σ_j C_{ij} · P_j
-          C_{ij} = (2π/λ) · dn/dT · L_phase · ΔT_{ij}(1 mW)
+        Build the thermal CROSS-coupling matrix C where:
+          δφ_i = Σ_{j≠i} C_{ij} · P_j
+
+        C_{ij} = (2π/λ) · dn/dT · L_phase · ΔT_{ij}(1 mW)  for i≠j
+        C_{ii} = 0  (self-heating is already accounted for in phase encoding)
+
+        NOTE: Self-heating (C_ii) is NOT included because the phase encoding
+        φ = β·S + π/2 already represents the desired thermo-optic phase shift.
+        The coupling matrix only captures the UNWANTED perturbation from
+        neighboring heaters.
         """
         N = self.shape[0] * self.shape[1]
         rows, cols = self.shape
@@ -155,15 +162,15 @@ class ThermalCrosstalkModel:
         X, Y = np.meshgrid(xs, ys)
         positions = np.column_stack([X.ravel(), Y.ravel()])
 
+        # Compute self-heating for reference (reported in stats, not used in C)
+        self_heating_dphi = (2 * np.pi / self.wavelength) * self.dn_dT * \
+                            self._temperature_rise(self.r_heater, 1.0) * self.L_phase
+
         for i in range(N):
             xi, yi = positions[i]
             for j in range(N):
                 if i == j:
-                    # Self-heating: T at r_heater (direct heating of own waveguide)
-                    dT_self = self._temperature_rise(self.r_heater, 1.0)
-                    # Phase shift per mW
-                    dphi_per_mW = (2 * np.pi / self.wavelength) * self.dn_dT * dT_self * self.L_phase
-                    self.C[i, j] = dphi_per_mW
+                    self.C[i, j] = 0.0  # No self-coupling (already in phase encoding)
                 else:
                     xj, yj = positions[j]
                     r = np.sqrt((xi - xj)**2 + (yi - yj)**2)
@@ -172,7 +179,7 @@ class ThermalCrosstalkModel:
                         dphi_per_mW = (2 * np.pi / self.wavelength) * self.dn_dT * dT * self.L_phase
                         self.C[i, j] = dphi_per_mW
 
-        # Normalize: typical heater power ~10 mW, so scale C
+        self.self_heating_dphi_per_mw = self_heating_dphi
         self.coupling_matrix = self.C
 
     def compute_crosstalk_phase(self, heater_powers, base_phases):
@@ -209,8 +216,9 @@ class ThermalCrosstalkModel:
 
     def get_coupling_stats(self):
         """Report thermal coupling statistics."""
-        # Self-coupling (diagonal)
-        diag = np.diag(self.C)
+        # Self-coupling is stored separately (not in C matrix)
+        self_val = self.self_heating_dphi_per_mw
+
         # Nearest-neighbor coupling (pitch distance)
         nn_mask = np.zeros_like(self.C, dtype=bool)
         N = self.shape[0] * self.shape[1]
@@ -224,15 +232,14 @@ class ThermalCrosstalkModel:
                     if dist == 1:
                         nn_mask[i, j] = True
 
-        self_vals = diag
         nn_vals = self.C[nn_mask]
 
         stats = {
-            "self_heating_dphi_per_mW": np.mean(self_vals),
-            "nn_coupling_dphi_per_mW": np.mean(np.abs(nn_vals)),
-            "nn_to_self_ratio": np.mean(np.abs(nn_vals)) / np.mean(np.abs(self_vals)),
-            "max_coupling": np.max(np.abs(self.C - np.diag(diag))),
-            "mean_coupling": np.mean(np.abs(self.C - np.diag(diag))),
+            "self_heating_dphi_per_mW": self_val,
+            "nn_coupling_dphi_per_mW": np.mean(np.abs(nn_vals)) if len(nn_vals) > 0 else 0,
+            "nn_to_self_ratio": np.mean(np.abs(nn_vals)) / self_val if self_val > 0 and len(nn_vals) > 0 else 0,
+            "max_coupling": np.max(np.abs(self.C)),
+            "mean_coupling": np.mean(np.abs(self.C)),
         }
         return stats
 

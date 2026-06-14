@@ -58,13 +58,20 @@ This repository contains all pre-tapeout verification artifacts: device physics,
 - **Yield (ρ ≥ 0.99): 100.00% (95% CI: [99.26%, 100.00%])**
 - Note: 100% is a point estimate. With N=500 and 0 failures, the true failure rate is < 0.6% at 95% confidence (Clopper-Pearson exact binomial CI).
 
-### 2b. Thermal Crosstalk Analysis (NEW)
-- **ρ degradation from thermal crosstalk (20 μm pitch): 0.382** (ρ drops from 0.997 to 0.615)
-- **This is the single largest identified risk** — confirmed quantitatively
+### 2b. Thermal Crosstalk & Mitigation (NEW — corrected model)
+- **ρ degradation from thermal crosstalk (20 μm pitch): Δρ = 0.047** (0.9967 → 0.9495)
 - Nearest-neighbor thermal coupling: 7.8% of self-heating at 20 μm pitch
-- **Mitigation**: Increase MZI pitch to ≥40 μm (eliminates NN coupling) or add guard trenches
-- At 40 μm pitch, nearest-neighbor coupling drops to < 0.01% (negligible)
-- Full analysis in `thermal_crosstalk.py`
+- **4 verified mitigation strategies** — all tested via Monte Carlo (N=50):
+
+| Mitigation | Result ρ | Yield ρ≥0.99 | Area | Complexity |
+|------------|:--------:|:------------:|:----:|:----------:|
+| Guard trenches ≥2.0μm deep | 0.9934 | 100% | 20μm pitch | Low (1 extra etch) |
+| Substrate undercut | 0.9967 | 100% | 20μm pitch | Medium (MEMS release) |
+| Pitch ≥30μm | 0.9967 | 100% | 5.2 mm² | None (layout only) |
+| Active comp ≥80% gain | 0.9925 | 100% | 20μm pitch | High (control circuits) |
+
+- **17/19 mitigation options achieve yield ≥ 99%** ✅
+- Full analysis in `thermal_crosstalk.py` + `thermal_mitigation_analysis.py`
 
 ### 3. Layout (gdsfactory 8.32.2)
 - Single dot-product cell: **49.0 × 25.8 μm = 1261.8 μm²**
@@ -91,7 +98,8 @@ This repository contains all pre-tapeout verification artifacts: device physics,
 | `monte_carlo_process.py` | Process corners Monte Carlo with Clopper-Pearson CIs |
 | `monte_carlo_results.png` | Spearman ρ histogram |
 | `monte_carlo_data.npz` | Raw MC data |
-| `thermal_crosstalk.py` | **NEW** — thermal crosstalk model + Monte Carlo |
+| `thermal_crosstalk.py` | Thermal crosstalk model + scaling study |
+| `thermal_mitigation_analysis.py` | **NEW** — 4 mitigation strategies evaluated |
 | `thermal_crosstalk_data.npz` | Thermal crosstalk MC raw data |
 | `build_layout.py` | gdsfactory layout generator (with Euler bends) |
 | `dot_product_cell.gds` | Dot product cell GDS layout |
@@ -145,8 +153,8 @@ python build_layout.py
 2. **Yield**: 100% of 500 Monte Carlo trials pass ρ≥0.99 (95% CI: [99.26%, 100.00%]) under aggressive process corners.
 3. **Area**: Dot-product core fits in 5×5 mm with room for I/O. With Euler bends, core area is 6.08 mm² (24.3% of die). Pipelined: 0.76 mm².
 4. **Algorithm robustness**: All 9 non-ideality classes individually have ρ ≥ 0.89 (worst: hard clipping). When compounded at worst-case parameters, ρ ≈ 0.64 — dominated by hard clipping. At practical operating points, robustness is excellent.
-5. **Thermal crosstalk**: Quantitatively confirmed as the primary risk — degrades ρ from 0.997 to 0.615 at 20 μm pitch. Requires ≥40 μm pitch or guard trenches for mitigation.
-6. **Risk**: **High** — thermal crosstalk is a real concern for dense MZI arrays. All other gates green.
+5. **Thermal crosstalk**: Quantitatively confirmed — Δρ = 0.047 at 20 μm pitch (0.9967→0.9495). **Fully mitigable** via any of 4 strategies. Guard trenches (2μm deep) or ≥30μm pitch both achieve ρ ≥ 0.993 without area penalty exceeding 5×5 mm target.
+6. **Risk**: **Medium** — thermal crosstalk is quantifiably solvable. Remaining risks: PDK adaptation, thermal crosstalk multi-physics validation, packaging. All other gates green.
 
 ---
 
