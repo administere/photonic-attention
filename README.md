@@ -4,6 +4,8 @@
 > **Date**: 2026-06-14  
 > **Target**: 5×5 mm die, Si photonics (500nm WG, SiO₂ clad, 1.55μm)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20688251.svg)](https://doi.org/10.5281/zenodo.20688251)
+
 ## Overview
 
 Photonic dot-product engine for Transformer attention using MZI mesh.  
