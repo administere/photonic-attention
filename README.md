@@ -105,9 +105,9 @@ python build_layout.py
 
 ## Author
 
-- **Wayne** ([@administere](https://github.com/administere))
+- **Wayne** ([@administere](https://github.com/administere), 1443558150@qq.com)
 - 本项目由人类构思、AI 协作完成。
-- 欢迎通过 [GitHub Issues](https://github.com/administere/photonic-attention/issues) 联系讨论合作或流片机会。
+- 欢迎通过 [GitHub Issues](https://github.com/administere/photonic-attention/issues) 或邮件联系讨论合作或流片机会。
 
 ---
 
