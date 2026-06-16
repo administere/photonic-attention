@@ -2,12 +2,12 @@
 
 > Photon reuse: one pulse traverses D modulation points, completing D multiplications. Heat is not a problem — it is the computational mechanism.
 > VCSEL light simultaneously carries signals and drives the thermal sieve | DiSubPc·C70 quantum coherent beating @242°C | 3-tier vertical stack
-> 25/25 Verified ✅ | ρ ≥ 0.995 | Full physics closed-loop simulation
+> 25/25 Simulation self-consistent ✅ | ρ ≥ 0.995 | Full physics closed-loop simulation
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20690521.svg)](https://doi.org/10.5281/zenodo.20690521)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- [Architecture](#architecture) · [Verification](#core-verification-results) · [Compute & Power](#compute--power) · [Related Work](#related-work-comparison) · [Originality](#originality-statement) · [Citation](#paper--citation) · [Candid Assessment](#candid-assessment)
+- [Architecture](#architecture) · [Simulation Results](#core-simulation-results) · [Compute & Power](#compute--power) · [Related Work](#related-work-comparison) · [Originality](#originality-statement) · [Citation](#paper--citation) · [Candid Assessment](#candid-assessment)
 
 ---
 
@@ -37,9 +37,9 @@ Photothermal material reference: Zhang, You et al., "Quantum coherent beating in
 
 ---
 
-## Core Verification Results
+## Core Simulation Results
 
-| Verification Item | Metric | Status |
+| Simulation Item | Metric | Status |
 |-------------------|--------|:------:|
 | Bipolar D=64 Dot Product | ρ=0.9972 | ✅ |
 | Bipolar D=128 Dot Product | ρ=0.9971 | ✅ |
@@ -196,12 +196,23 @@ This work aligns with three major 2024–25 photonic computing trends: mutually 
 
 ## Candid Assessment
 
-- **Physically sound**: The attojoule advantage of photon reuse follows from Maxwell's equations. However, system-level efficiency is heavily diluted by detectors, ADCs, and cooling — at D=2048, ~9,651× vs H100, far below the 59M× pure optical figure.
-- **Not a universal processor**: Weight updates take ~30 seconds. Static-weight inference only. Training, fine-tuning, and multi-tenant switching are not supported.
-- **Amdahl's law is a real constraint**: In autoregressive Transformer inference, attention accounts for ~3% of per-layer FLOPs. End-to-end speedup is bounded at ~1×. Long-context scenarios (where attention dominates more) may be a better application fit, but this remains unverified.
-- **Simulation-to-experiment gap**: All results are simulation-based. No experimental data, no hardware. Every simulation result is a hypothesis until tested.
-- **Independent engineering review exists**: [thermal-optical-validation](https://github.com/administere/thermal-optical-validation) provides a complete first-principles through engineering analysis, including sensitivity analysis and D scaling laws. Conclusion: physically self-consistent, engineeringly solvable.
-- **The real bottleneck for the next stage is not more simulation — it's experiment.** Finding a collaborator with DiSubPc·C70 film fabrication and optical characterization capability is far more valuable than further simulation work.
+What follows is my most honest self-review of this project. These are not decorative "limitations" paragraphs — each one represents a real risk.
+
+- **Simulation ≠ verification.** All 25/25 items are Python numerical simulations. No tapeout, no optical experiment, no hardware data whatsoever. The ρ values in the table above are numerical solutions to a set of physical models on a computer — not measurements. This is why I changed "Verified" to "Simulation self-consistent" — internal consistency within your simulation framework is a fundamentally different thing from being true in the physical world.
+
+- **Not a universal processor, and never will be.** Weight updates take ~30 seconds. This is determined by the thermal relaxation time constant — not something code optimization can fix. The 0.033Hz update rate is not a bug; it is a defining characteristic of this architecture. It serves weight-static inference only. Training, LoRA fine-tuning, multi-tenant switching — none of these are supported.
+
+- **Amdahl's law is a real constraint.** In autoregressive Transformer inference, attention accounts for ~3% of per-layer FLOPs. End-to-end system speedup is ~1×. Long-context scenarios (where attention dominates more) may be a better fit, but this is unverified. The value is in attention energy reduction, not throughput improvement.
+
+- **Energy numbers require careful interpretation.** "59M× vs H100" is the pure optical theoretical value — it excludes detectors, ADCs, VCSEL drive circuits, PCB trace losses, cooling pump power, and optical coupling losses. Including detectors and ADCs drops it to ~9,651×. Moreover, the H100 performs general GEMM; this processor performs only specific-dimension dot products — not the same task. Direct comparison is misleading.
+
+- **DiSubPc·C70 is the single largest point of failure.** The entire architecture's core physical mechanism rests on a single *Nature Photonics* paper published in 2026. There is zero precedent for using this material in optical computing. No long-term stability data exists for the organic cocrystal film under repeated thermal cycling at 242°C. Large-area fabrication uniformity is completely unknown. If the material fails, the architecture collapses.
+
+- **Softmax round-trip overhead is not properly accounted for.** Optical dot product → ADC → Softmax (electronic) → DAC → back into optical path. The latency, power, and precision loss of this optoelectronic round-trip is treated coarsely in the throughput analysis. If this overhead is large enough, it could consume the attojoule advantage of the optical section.
+
+- **AI-assisted verification credibility requires scrutiny.** DEEPSEEK_HANDOFF.md suggests this project has been passed between multiple AI systems. If the simulation framework itself was AI-assisted in construction, and then the same framework was used for "verification," there is a risk of systematic bias being concealed. The independent engineering review ([thermal-optical-validation](https://github.com/administere/thermal-optical-validation)) provides partial mitigation, but is no substitute for genuine external scrutiny.
+
+- **The next stage is not tapeout — it's experiment.** Build a tabletop optical experiment first: VCSEL + DiSubPc·C70 film + APD, and measure actual ρ data for the photothermal modulation itself. This would be far more convincing than any simulation, and far more sensible than going straight to tapeout. Finding a collaborator with thin-film fabrication and optical characterization capability is the single most valuable next step.
 
 ---
 
